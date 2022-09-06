@@ -1,0 +1,12 @@
+[package]
+name = "smartalloc-sys"
+version = "0.0.0"
+edition = "2021"
+authors = ["Ehsan M. Kermani", "John Walker https://www.fourmilab.ch"]
+license = "MIT OR Apache-2.0"
+description = "Unsafe rust binding to smartalloc"
+readme = "README.md"
+repository = "https://github.com/ehsanmok/smartalloc-rs/tree/main/smartalloc-sys"
+
+[build-dependencies]
+cc = "1.0"

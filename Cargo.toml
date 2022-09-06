@@ -1,0 +1,25 @@
+[package]
+name = "smartalloc"
+version = "0.0.0"
+authors = ["Ehsan M. Kermani"]
+description = "Smartalloc rust binding"
+readme = "README.md"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["allocator", "debug", "orphaned-buffer"]
+categories = ["development-tools::debugging", "no-std"]
+repository = "https://github.com/ehsanmok/smartalloc-rs"
+exclude = ["/.github"]
+rust-version = "1.64"
+
+[workspace]
+members = ["smartalloc-sys"]
+
+[dependencies]
+smartalloc-sys = { path = "smartalloc-sys", version = "*" }
+
+[profile.dev]
+opt-level = 0
+
+[package.metadata]
+targets = ["x86_64-unknown-linux-gnu"]

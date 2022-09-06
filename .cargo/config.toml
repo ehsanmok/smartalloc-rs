@@ -1,7 +1,5 @@
 [build]
-# rustflags="-Zpanic_abort_tests -Cpanic=abort"
-# rustflags="-Zsanitizer=memory -Zsanitizer-memory-track-origins"
-# rustflags="-Zsanitizer=leak"
+rustflags="-Zsanitizer=leak"
 
 [env]
 RUST_TEST_THREADS = "1"
