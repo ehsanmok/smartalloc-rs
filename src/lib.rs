@@ -1,4 +1,3 @@
-//! [![Build](https://github.com/ehsanmok/smartalloc-rs/actions/workflows/build.yml/badge.svg)](https://github.com/ehsanmok/smartalloc-rs/actions/workflows/build.yml)
 //! [![no std](https://img.shields.io/badge/no-std-red)](https://img.shields.io/badge/no-std-red)
 //! [![crates.io](https://img.shields.io/crates/v/smartalloc.svg)](https://crates.io/crates/smartalloc)
 //! [![docs.rs](https://docs.rs/smartalloc/badge.svg)](https://docs.rs/smartalloc)
@@ -19,7 +18,7 @@
 //!
 //! ```ini
 //! [dev-dependencies]
-//! smartalloc = "0.0.0"
+//! smartalloc = "0.2"
 //! ```
 //!
 //! In fact, with `#![cfg(debug_assertions)]` the crate does **not** compile in the `--release` mode so preventing from any accidental usage.
@@ -30,7 +29,7 @@
 //! ## Example
 //!
 //! During debugging, configure the `SmartAlloc` as the global allocator. Then include `sm_dump(true)` at the end of an unsafe code block.
-//! Here is the [examples/orphan.rs](https://github.com/ehsanmok/smartalloc-rs/examples/orphan.rs)
+//! Here is the [examples/orphan.rs](https://github.com/ehsanmok/smartalloc-rs/blob/main/examples/orphan.rs)
 //!
 //! ```no_run
 //! use core::alloc::{GlobalAlloc, Layout};
@@ -70,7 +69,9 @@
 //!
 //! ## Features
 //!
-//! The detector can be turned off using `sm_static(true)` and turned back on `sm_static(false)` to wrap cases where allocation is done through std or safe cases such as [examples/native.rs](https://github.com/ehsanmok/smartalloc-rs/examples/native.rs). For more details, checkout the original [docs](https://www.fourmilab.ch/smartall/).
+//! The detector can be turned off using `sm_static(true)` and turned back on `sm_static(false)` to wrap cases where allocation
+//! is done through std or safe cases such as [examples/native.rs](https://github.com/ehsanmok/smartalloc-rs/blob/main/examples/native.rs).
+//! For more details, checkout the original [docs](https://www.fourmilab.ch/smartall/).
 //!
 //! ## Aren't SANs alone supposed to detect such errors?
 //!
@@ -83,7 +84,7 @@
 //! RUSTFLAGS="-Zsanitizer=address" cargo +nightly run --example undetected
 //! ```
 //!
-//! for [examples/undetected.rs](https://github.com/ehsanmok/smartalloc-rs/examples/undetected.rs) which is
+//! for [examples/undetected.rs](https://github.com/ehsanmok/smartalloc-rs/blob/main/examples/undetected.rs) which is
 //!
 //! ```no_run
 //! unsafe {
@@ -100,7 +101,8 @@
 //! opt-level = 0
 //! ```
 //!
-//! for the SmartAlloc to work with introspection as opposed to what has been advised to include (at least `opt-level=1`) [here](https://github.com/japaric/rust-san#unrealiable-leaksanitizer)
+//! for the SmartAlloc to work with introspection as opposed to what has been advised to include (at least `opt-level=1`)
+//! [here](https://github.com/japaric/rust-san#unrealiable-leaksanitizer)
 //! to cirvumvent such a limitation but when is done the context gets destroyed. Also
 //!
 //! ```txt
@@ -130,6 +132,14 @@
 //! ```
 //!
 //! so it needs more work!
+//!
+//! <br>
+//!
+//! ## Known issue
+//!
+//! [smartalloc-sys/csrc/smartall.c](https://github.com/ehsanmok/smartalloc-rs/blob/main/smartalloc-sys/csrc/smartall.c)
+//! writes into the passed filename pointer tracked by `#[track_caller]` (which is immutable)
+//! which is an UB that could result into displaying more garbage after the filename in its report using this binding.
 
 #![no_std]
 #![crate_type = "lib"]
@@ -169,6 +179,11 @@ unsafe impl GlobalAlloc for SmartAlloc {
         let fname = caller_loc.file();
         let lineno = caller_loc.line();
         ffi::sm_malloc(
+            // this is an unfortunate UB making the output contain some garbage
+            // and seems no other way to make it safe as
+            // `smartall.c` writes into the passed ptr and `fname` is behind a shared pointer
+            // and also neither of `core::cell::Cell` or `alloc::string::String.as_mut_ptr`
+            // can guarentee UTF-8 validity concernes!
             fname.as_ptr() as *const _ as *mut c_char,
             lineno as c_int,
             layout.size(),
@@ -187,6 +202,11 @@ unsafe impl GlobalAlloc for SmartAlloc {
         let fname = caller_loc.file();
         let lineno = caller_loc.line();
         ffi::sm_calloc(
+            // this is an unfortunate UB making the output contain some garbage
+            // and seems no other way to make it safe as
+            // `smartall.c` writes into the passed ptr and `fname` is behind a shared pointer
+            // and also neither of `core::cell::Cell` or `alloc::string::String.as_mut_ptr`
+            // can guarentee UTF-8 validity concernes!
             fname.as_ptr() as *const _ as *mut c_char,
             lineno as c_int,
             1,
@@ -201,6 +221,11 @@ unsafe impl GlobalAlloc for SmartAlloc {
         let fname = caller_loc.file();
         let lineno = caller_loc.line();
         ffi::sm_realloc(
+            // this is an unfortunate UB making the output contain some garbage
+            // and seems no other way to make it safe as
+            // `smartall.c` writes into the passed ptr and `fname` is behind a shared pointer
+            // and also neither of `core::cell::Cell` or `alloc::string::String.as_mut_ptr`
+            // can guarentee UTF-8 validity concernes!
             fname.as_ptr() as *const _ as *mut c_char,
             lineno as c_int,
             ptr as *mut c_void,
@@ -222,16 +247,6 @@ mod tests {
             alloc.dealloc(ptr, layout);
         }
         sm_dump(true);
-    }
-
-    #[test]
-    fn sm_dump_orphan_alloc() {
-        unsafe {
-            let alloc = SmartAlloc;
-            let layout = Layout::from_size_align(8, 8).unwrap();
-            alloc.alloc(layout);
-            sm_dump(true);
-        }
     }
 
     #[test]

@@ -16,7 +16,7 @@ To get the best experience, `RUSTFLAGS=-Zsanitizer=leak` is used and is included
 
 ```ini
 [dev-dependencies]
-smartalloc = "0.1"
+smartalloc = "0.2"
 ```
 
 In fact, with `#![cfg(debug_assertions)]` the crate does **not** compile in the `--release` mode so preventing from any accidental usage.
@@ -25,7 +25,7 @@ The crate **requires nightly** Rust toolchain (MSRV 1.65).
 ## Example
 
 During debugging, configure the `SmartAlloc` as the global allocator. Then include `sm_dump(true)` at the end of an unsafe code block.
-Here is the [examples/orphan.rs](https://github.com/ehsanmok/smartalloc-rs/examples/orphan.rs)
+Here is the [examples/orphan.rs](https://github.com/ehsanmok/smartalloc-rs/blob/main/examples/orphan.rs)
 
 ```rust
 use core::alloc::{GlobalAlloc, Layout};
@@ -63,7 +63,7 @@ which refers to the `#[global_allocator]` itself and can be ignored.
 
 ## Features
 
-The detector can be turned off using `sm_static(true)` and turned back on `sm_static(false)` to wrap cases where allocation is done through std or safe cases such as [examples/native.rs](https://github.com/ehsanmok/smartalloc-rs/examples/native.rs). For more details, checkout the original [docs](https://www.fourmilab.ch/smartall/).
+The detector can be turned off using `sm_static(true)` and turned back on `sm_static(false)` to wrap cases where allocation is done through std or safe cases such as [examples/native.rs](https://github.com/ehsanmok/smartalloc-rs/blob/main/examples/native.rs). For more details, checkout the original [docs](https://www.fourmilab.ch/smartall/).
 
 ## Aren't SANs alone supposed to detect such errors?
 
@@ -76,7 +76,7 @@ RUSTFLAGS="-Zsanitizer=leak" cargo +nightly run --example undetected
 RUSTFLAGS="-Zsanitizer=address" cargo +nightly run --example undetected
 ```
 
-for [examples/undetected.rs](https://github.com/ehsanmok/smartalloc-rs/examples/undetected.rs) which is
+for [examples/undetected.rs](https://github.com/ehsanmok/smartalloc-rs/blob/main/examples/undetected.rs) which is
 
 ```rust
 unsafe {
@@ -123,6 +123,12 @@ Caused by:
 ```
 
 so it needs more work!
+
+## Known issue
+
+[smartalloc-sys/csrc/smartall.c](https://github.com/ehsanmok/smartalloc-rs/blob/main/smartalloc-sys/csrc/smartall.c)
+writes into the passed filename pointer tracked by `#[track_caller]` (which is immutable)
+which is an UB that could result into displaying more garbage after the filename in its report using this binding.
 
 ## License
 
