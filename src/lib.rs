@@ -134,7 +134,6 @@
 #![no_std]
 #![crate_type = "lib"]
 #![cfg(debug_assertions)]
-#![doc(html_root_url = "https://docs.rs/smartalloc/0.0.0")]
 
 extern crate smartalloc_sys as ffi;
 

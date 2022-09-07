@@ -4,7 +4,6 @@
 [![no std](https://img.shields.io/badge/no-std-red)](https://img.shields.io/badge/no-std-red)
 [![crates.io](https://img.shields.io/crates/v/smartalloc.svg)](https://crates.io/crates/smartalloc)
 [![docs.rs](https://docs.rs/smartalloc/badge.svg)](https://docs.rs/smartalloc)
-[![GitHub](https://img.shields.io/crates/l/smartalloc)](https://github.com/ehsanmok/smartalloc-rs)
 
 This crate provides a `no_std` idiomatic Rust binding to [smartalloc](https://www.fourmilab.ch/smartall/) used for
 **detecting orphaned buffer allocation** which is a type of heap memory leak that the program has lost all access to it.
@@ -17,7 +16,7 @@ To get the best experience, `RUSTFLAGS=-Zsanitizer=leak` is used and is included
 
 ```ini
 [dev-dependencies]
-smartalloc = "0.0.0"
+smartalloc = "0.1"
 ```
 
 In fact, with `#![cfg(debug_assertions)]` the crate does **not** compile in the `--release` mode so preventing from any accidental usage.
