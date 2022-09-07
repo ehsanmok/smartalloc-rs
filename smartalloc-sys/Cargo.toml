@@ -1,6 +1,6 @@
 [package]
 name = "smartalloc-sys"
-version = "0.2.0"
+version = "0.3.0-dev.0"
 edition = "2021"
 authors = ["Ehsan M. Kermani", "John Walker https://www.fourmilab.ch"]
 license = "MIT OR Apache-2.0"
